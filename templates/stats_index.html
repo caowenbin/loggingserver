@@ -1,0 +1,59 @@
+{% extends "stats_base.html" %}
+
+{% block title %}
+<title> logging server-stats_index.html</title>
+{% end %}
+
+{% block body_part1 %}
+{% end %}
+
+{% block body_part3 %}
+<div >
+    <div>
+      <h1>Logging Server</h1>
+        <p> 采用tornado和python的logging模块实现了一个简单的http日志服务器,实现了错误日志的收集和程序基本监控。</p>
+        <br/>
+        <p> python logging模块http_handler基本使用方法:<br/>
+        <code>
+        import logging<br/>
+        logger = logging.getLogger('loggername')<br/>
+        ...<br/>
+        http_handler = logging.handlers.HTTPHandler(<br/>
+            '%s:%s' % (server_host, server_port),<br/>
+            server_path,<br/>
+            method='POST', # GET<br/>
+        )   <br/>
+        http_handler.setLevel(logging.ERROR)<br/>
+        logger.addHandler(http_handler)<br/>
+        <br/>
+        logger.error('this error log should be sent to logging server')<br/>
+        </code>
+        <br/>
+        <p> 使用说明: 通过下面代码即可实现对程序master的一些基本信息的收集
+        <br/>
+        
+    <code>
+    from mylogger import Logger  <br/>
+    logger = Logger.getLogger('test1', None, 'DEBUG', True)<br/>
+    Logger.addLoggingServer(logger, '127.0.0.1', 9900)<br/>
+<br/>
+    logger2 = Logger.getLogger('test2', None, 'DEBUG', True)<br/>
+    Logger.addLoggingServer(logger2, '127.0.0.1', 9900)<br/>
+<br/>
+    stats = AppStats('cluster3', 'parser', logger)<br/>
+<br/>
+    section = 'process'<br/>
+    options = {'带宽': 1000, '速度':0.01, '解析数量': 102392, '存储数量': 1029394}<br/>
+    stats.log(section, options, 'set')<br/>
+    </code>
+    <br/>
+    示意图:
+    <img width="800px" src="{{static_url("code/stats_demo.png")}}"/>
+    </p>
+        <br/>
+        <p>统计客户端代码: <code> <a href="{{static_url("code/stats_client.py")}}">stats_client.py</a></code></p>
+        <p>日志模块代码:<code> <a href="{{static_url("code/mylogger.py")}}">mylogger.py</a></code></p>
+    </div>
+</div>
+{% end %}
+

@@ -1,0 +1,109 @@
+{% extends "stats_base.html" %}
+
+{% block title %}
+<title> {{title}} </title>
+{% end %}
+
+{% block body_part1 %}
+{% end %}
+
+{% block body_part2 %}
+     <script type="text/javascript">
+        function submit_keys(href) {
+            document.getElementById('show_result_info').innerHTML = '';
+            var bfname = document.getElementById('bf_name').value;
+            var bfkeys = document.getElementById('bf_keys').value;
+            if (bfname && bfkeys) {
+                href += "&bf=" + bfname + "&key=" + bfkeys;
+                $.post(href, function(data){
+                    jsonstr = $.toJSON(data);
+                    document.getElementById('show_result_info').innerHTML = jsonstr;
+                    //json_obj = JSON.parse(jsonstr); 
+                    //text_warn.value = json_obj.msg;
+                    //text_warn.style.display = true;
+                })
+            } else {
+                //document.getElementById('show_result_info').innerHTML = 'key is null';
+                document.getElementById('show_result_info').text = 'key is null';
+            }
+        }
+        function select_group(elem, jsonstr) 
+        {
+            document.getElementById('select_sections').innerHTML = '<option>select one</option>';
+            var group_selected = elem.options[elem.options.selectedIndex].value;
+            href = '/stats/list/' + group_selected
+            $.get(href, function(resp) {
+                jsonstr = $.toJSON(resp);
+                json_obj = JSON.parse(jsonstr); 
+                var nodename_options = '<option>select one</option>';
+                for(var i in json_obj[group_selected]) {
+                    nodename_options += "<option value=" + group_selected + ">" + json_obj[group_selected][i]+ "</option>"; 
+                } 
+                document.getElementById('select_nodename').innerHTML = nodename_options;
+            })
+        }
+        function select_node_change(elem) {
+            var group_selected = elem.options[elem.options.selectedIndex].value;
+            var node_selected = elem.options[elem.options.selectedIndex].label;
+            //var node_selected = elem.options[elem.options.selectedIndex].text;
+            var href = '/stats/list/' + group_selected + "/" + node_selected
+            $.get(href, function(resp) {
+                jsonstr = $.toJSON(resp);
+                json_obj = JSON.parse(jsonstr); 
+                var sections_options = '<option>select one</option>';
+                for(var i in json_obj[group_selected][node_selected]) {
+                    sections_options += "<option group=" +group_selected+ " node="+node_selected+">" + json_obj[group_selected][node_selected][i]+ "</option>"; 
+                } 
+                document.getElementById('select_sections').innerHTML = sections_options;
+            })
+        }
+        function select_section_change(elem) {
+            var groupname = elem.options[elem.options.selectedIndex].getAttribute('group');
+            var nodename = elem.options[elem.options.selectedIndex].getAttribute('node');
+            var section = elem.options[elem.options.selectedIndex].label;
+            // http://192.168.1.63:9900/stats/list/cluster1/master/p2
+            var href = '/stats/list/' + groupname + "/" + nodename + "/" + section
+            $.get(href, function(resp) {
+                jsonstr = $.toJSON(resp);
+                json_obj = JSON.parse(jsonstr); 
+                var jsonstr_format = JSON.stringify(json_obj,null,4);
+                document.getElementById('show_result_info').value = jsonstr_format;
+                document.getElementById('show_result_info2').innerHTML = jsonstr;
+            })
+        }
+     </script>
+
+     <div class="table-responsive">
+       <h3 id="sub-header">管理</h3>
+       group:
+       <select id="select_groupname" class="btn btn-default" onchange="select_group(this)">
+            <option>select one</option>
+         {% for group in monitor_group_node_sections.keys() %}
+            <option>{{group}}</option>
+         {% end %}
+       </select>
+       node:
+       <select id="select_nodename" class="btn btn-default" onchange="select_node_change(this)">
+            <option>select one</option>
+       </select>
+       section:
+       <select id="select_sections" class="btn btn-default" onchange="select_section_change(this)">
+            <option>select one</option>
+       </select>
+
+       <a class="btn btn-default" onclick="javascript:void(0);" href="#">update</a>
+       <a class="btn btn-default" onclick="javascript:void(0);" href="#">delete</a>
+       <h4><p id="show_result_info2" class="alert alert-info" role="alert"></p></h4>
+       <textarea id="show_result_info" class="form-control" style="overflow:scroll; overflow-x:hidden; height:400px;"></textarea>
+     </div>
+
+   </div>
+</div>
+{% end %}
+
+{% block body_part3 %}
+{% end %}
+
+{% block body_end %}
+<script src="{{ static_url("js/jquery.json-2.4.min.js") }}"></script>
+{% end %}
