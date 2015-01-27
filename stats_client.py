@@ -33,6 +33,8 @@ class AppStats(object):
         jsonstr = json.dumps(stats_d, ensure_ascii=True)
         return jsonstr
 
+StatsClient = AppStats
+
 if __name__ == "__main__":
 
     from mylogger import Logger
