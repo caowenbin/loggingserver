@@ -23,7 +23,7 @@ from stats_redis import StatsServer
 
 define("name", default="test", help="instance name", type=str)
 define("http_port", default=9900, help="run on the given port", type=int)
-define("redis_addr", default='192.168.1.65', help="redis host", type=str)
+define("redis_addr", default='127.0.0.1', help="redis host", type=str)
 define("redis_port", default=6379, help="redis port", type=int)
 
 define("logdir", default='log', help="log directory", type=str)
