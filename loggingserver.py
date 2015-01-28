@@ -19,8 +19,9 @@ import requests
 import signal
 import pymongo
 from mylogger import Loggers
-from stats_redis import RedisStats
+from stats_redis import StatsServer
 
+define("name", default="test", help="instance name", type=str)
 define("http_port", default=9900, help="run on the given port", type=int)
 define("redis_addr", default='localhost', help="redis host", type=str)
 define("redis_port", default=6379, help="redis port", type=int)
@@ -38,7 +39,7 @@ define("loggingserver_level", default='ERROR', help="log server level", type=str
 define("loggingserver_method", default='GET', help="log server http method", type=str)
  
 class Application(tornado.web.Application):
-    def __init__(self, redis_, logname, loggers):
+    def __init__(self, name, redis_, logname, loggers):
         handlers = [
             (r"/logging", LoggingApiHandler),
             (r"/log", LoggingApiHandler),
@@ -61,7 +62,8 @@ class Application(tornado.web.Application):
         self.redis_ = redis_
         self.loggers = loggers
         self.logger = self.loggers[logname]
-        self.stats = RedisStats(self.redis_, self.logger)
+        self.name = name
+        self.stats = StatsServer(self.name, self.redis_, self.logger)
 
         #tornado.ioloop.PeriodicCallback(self.timer, 10000).start()
         
@@ -202,7 +204,7 @@ def main():
     redis_ = redis.Redis(host=options.redis_addr, port=options.redis_port)
 
     loggers[options.logname].info('listen %s' % options.http_port)
-    application = Application(redis_, options.logname, loggers)
+    application = Application(options.name, redis_, options.logname, loggers)
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(options.http_port)
     tornado.ioloop.IOLoop.instance().start()

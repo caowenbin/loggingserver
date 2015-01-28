@@ -4,7 +4,8 @@
 import json
 
 class RedisStats(object):
-    def __init__(self, redis, logger):
+    def __init__(self, name, redis, logger):
+        self.name = name
         self.redis = redis
         self.logger = logger
 
@@ -33,11 +34,11 @@ class RedisStats(object):
                     if not options:
                         self.logger.warn('%s is None' % section)
                         continue
-                    redis_key = 'monitor::%s::%s::%s' % (groupname, nodename, section)
+                    redis_key = 'monitor::%s::%s::%s::%s' % (self.name, groupname, nodename, section)
                     r = self.redis.hmset(redis_key, options)
                     self.logger.info('hmset %s %s %s' % (redis_key, options, r)) 
                 elif type == 'set':  # 先清空之前记录，再设置
-                    redis_key = 'monitor::%s::%s::%s' % (groupname, nodename, section)
+                    redis_key = 'monitor::%s::%s::%s::%s' % (self.name, groupname, nodename, section)
                     r = self.redis.delete(redis_key)  # 先删除
                     self.logger.info('hdel %s %s' % (redis_key, r)) 
                     if not options:
@@ -53,7 +54,7 @@ class RedisStats(object):
         key1 = groupname if groupname else '*'
         key2 = nodename if nodename else '*'
         key3 = section if section else '*'
-        redis_key = 'monitor::%s::%s::%s' % (key1, key2, key3)
+        redis_key = 'monitor::%s::%s::%s::%s' % (self.name, key1, key2, key3)
         stats_keys = self.redis.keys(redis_key)
         for stats_key in stats_keys:
             r = self.redis.hgetall(stats_key)
@@ -89,16 +90,16 @@ class RedisStats(object):
     def list_nodes(self, groupname=None):
         ret = {}
         key1 = groupname if groupname else '*'
-        redis_key = 'monitor::%s::*' % key1
+        redis_key = 'monitor::%s::%s::*' % (self.name, key1)
         stats_keys = self.redis.keys(redis_key)
         for stats_key in stats_keys:
             l = stats_key.split('::')
-            if len(l) != 4:
+            if len(l) != 5:
                 self.logger.warn('invalid redis key:%s'%stats_key)
                 continue
-            groupname = l[1]
-            nodename = l[2]
-            #section = l[3]
+            groupname = l[2]
+            nodename = l[3]
+            #section = l[4]
             if groupname not in ret:
                 ret[groupname] = []
             if nodename not in ret[groupname]:
@@ -109,16 +110,16 @@ class RedisStats(object):
         ret = {}
         key1 = groupname if groupname else '*'
         key2 = nodename if nodename else '*'
-        redis_key = 'monitor::%s::%s::*' % (key1, key2)
+        redis_key = 'monitor::%s::%s::%s::*' % (self.name, key1, key2)
         stats_keys = self.redis.keys(redis_key)
         for stats_key in stats_keys:
             l = stats_key.split('::')
-            if len(l) != 4:
+            if len(l) != 5:
                 self.logger.warn('invalid redis key:%s'%stats_key)
                 continue
-            groupname = l[1]
-            nodename = l[2]
-            section = l[3]
+            groupname = l[2]
+            nodename = l[3]
+            section = l[4]
             if groupname not in ret:
                 ret[groupname] = {}
             if nodename not in ret[groupname]:
@@ -126,6 +127,8 @@ class RedisStats(object):
             if section not in ret[groupname][nodename]:
                 ret[groupname][nodename].append(section)
         return ret
+
+StatsServer = RedisStats
 
 if __name__ == "__main__":
 
@@ -140,7 +143,7 @@ if __name__ == "__main__":
 
     import redis
     redis_ = redis.Redis()
-    redisStats = RedisStats(redis_, logger)
+    redisStats = RedisStats('test', redis_, logger)
 
     section = 'process'
     options = {'mem': 1000, 'cpu':0.01}
