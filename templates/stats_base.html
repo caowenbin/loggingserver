@@ -106,7 +106,8 @@
           {% for group in monitor_groups_info.keys() %}
            {% for node in monitor_groups_info[group].keys() %}
             {% for section in monitor_groups_info[group][node].keys() %}
-			<h3 class="sub-header">{{group}}/{{node}}/{{section}}</h3>
+			<!--h3 class="sub-header">{{group}}/{{node}}/{{section}}</h3-->
+			<h3 class="sub-header">{{section}}</h3>
 			<div class="table-responsive">
 			<table class="table table-striped">
 				<thead>

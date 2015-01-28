@@ -23,7 +23,7 @@ from stats_redis import StatsServer
 
 define("name", default="test", help="instance name", type=str)
 define("http_port", default=9900, help="run on the given port", type=int)
-define("redis_addr", default='localhost', help="redis host", type=str)
+define("redis_addr", default='192.168.1.65', help="redis host", type=str)
 define("redis_port", default=6379, help="redis port", type=int)
 
 define("logdir", default='log', help="log directory", type=str)
@@ -55,7 +55,7 @@ class Application(tornado.web.Application):
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             ui_modules={"Entry": EntryModule},
-            debug=True,
+            #debug=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
